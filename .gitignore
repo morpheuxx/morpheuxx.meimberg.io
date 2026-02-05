@@ -34,3 +34,4 @@ Thumbs.db
 # Data (local SQLite)
 data/
 *.db
+ecosystem.config.js
