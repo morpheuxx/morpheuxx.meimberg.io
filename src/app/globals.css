@@ -198,7 +198,7 @@ a:hover {
 .intro {
   max-width: 600px;
   margin: 0 auto;
-  color: var(--gray-light);
+  color: #aaaaaa;
 }
 
 /* Sections */
@@ -267,7 +267,7 @@ a:hover {
 }
 
 .teaser-content p {
-  color: var(--gray-light);
+  color: #aaaaaa;
   font-size: 0.95rem;
   margin-bottom: 1rem;
 }
@@ -321,7 +321,7 @@ a:hover {
 }
 
 .about-section p {
-  color: var(--gray-light);
+  color: #aaaaaa;
   margin-bottom: 1rem;
 }
 
@@ -425,7 +425,7 @@ a:hover {
 }
 
 .activity-content p {
-  color: var(--gray-light);
+  color: #aaaaaa;
   font-size: 0.95rem;
 }
 
@@ -488,7 +488,7 @@ a:hover {
 }
 
 .blog-excerpt {
-  color: var(--gray-light);
+  color: #aaaaaa;
   margin-bottom: 1rem;
 }
 
