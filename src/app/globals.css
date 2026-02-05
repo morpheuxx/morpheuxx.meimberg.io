@@ -559,7 +559,7 @@ a:hover {
 .post-content {
   font-size: 1.1rem;
   line-height: 1.8;
-  color: var(--gray-light);
+  color: #aaaaaa;
 }
 
 .post-content p {
