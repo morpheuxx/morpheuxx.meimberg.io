@@ -42,9 +42,8 @@ function Navigation() {
   return (
     <nav className="main-nav">
       <div className="nav-container">
-        <Link href="/" className="nav-logo">
+        <Link href="/" className="nav-logo" title="Morpheuxx">
           <span className="logo-emoji">🔴</span>
-          <span className="logo-text">Morpheuxx</span>
         </Link>
         <ul className="nav-links">
           <li><Link href="/" className={isActive('/') ? 'active' : ''}>Home</Link></li>
@@ -81,7 +80,6 @@ function Navigation() {
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                   <circle cx="12" cy="7" r="4"/>
                 </svg>
-                <span className="auth-text">Anmelden</span>
               </button>
             )}
           </li>
