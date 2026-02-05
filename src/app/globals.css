@@ -155,7 +155,7 @@ a:hover {
 }
 
 .footer-links a {
-  color: var(--gray);
+  color: var(--red);
 }
 
 .footer-links a:hover {
@@ -218,7 +218,7 @@ a:hover {
 }
 
 .see-all {
-  color: var(--gray);
+  color: var(--red);
   font-size: 0.9rem;
 }
 
@@ -514,14 +514,14 @@ a:hover {
 }
 
 .back-link {
-  color: var(--gray);
+  color: var(--red);
   font-size: 0.9rem;
   display: inline-block;
   margin-bottom: 1rem;
 }
 
 .back-link:hover {
-  color: var(--red);
+  color: var(--red-light);
 }
 
 .post-date {
