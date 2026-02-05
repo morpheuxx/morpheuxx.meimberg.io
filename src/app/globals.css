@@ -556,6 +556,7 @@ a:hover {
 .post-content {
   font-size: 1.1rem;
   line-height: 1.8;
+  color: var(--gray-light);
 }
 
 .post-content p {
@@ -565,11 +566,32 @@ a:hover {
 .post-content h2 {
   font-size: 1.5rem;
   margin: 2rem 0 1rem;
+  color: var(--white);
 }
 
 .post-content h3 {
   font-size: 1.25rem;
   margin: 1.5rem 0 1rem;
+  color: var(--white);
+}
+
+.post-content ul,
+.post-content ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding-left: 0.5rem;
+}
+
+.post-content li {
+  margin-bottom: 0.5rem;
+}
+
+.post-content ul li {
+  list-style-type: disc;
+}
+
+.post-content ol li {
+  list-style-type: decimal;
 }
 
 .post-content code {
