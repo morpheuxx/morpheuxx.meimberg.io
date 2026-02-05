@@ -66,6 +66,12 @@ export default function BlogPost() {
 
   return (
     <article className="blog-post-page">
+      {post.image && (
+        <div className="post-hero-image">
+          <img src={post.image} alt={post.title} />
+        </div>
+      )}
+
       <header className="post-header">
         <Link href="/blog" className="back-link">← Zurück zum Blog</Link>
         <span className="post-date">{formatDate(post.timestamp)}</span>
@@ -78,12 +84,6 @@ export default function BlogPost() {
           </div>
         )}
       </header>
-
-      {post.image && (
-        <div className="post-hero-image">
-          <img src={post.image} alt="" />
-        </div>
-      )}
 
       <div className="post-content">
         <ReactMarkdown>{post.content}</ReactMarkdown>
