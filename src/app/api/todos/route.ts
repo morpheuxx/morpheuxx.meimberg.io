@@ -5,10 +5,21 @@ import path from 'path';
 import { auth } from '@/lib/auth';
 
 const TODOS_FILE = path.join(process.cwd(), 'data', 'todos.json');
+const TODOS_META_FILE = path.join(process.cwd(), 'data', 'todos.meta.json');
 
-const canModify = async () => {
+const canModify = async (request?: NextRequest) => {
   const session = await auth();
-  return session?.user?.isAdmin;
+  if (session?.user?.isAdmin) return true;
+
+  // Agent access (server-to-server): allow if token matches
+  if (request) {
+    const token = request.headers.get('x-agent-token');
+    if (token && process.env.AGENT_TODO_TOKEN && token === process.env.AGENT_TODO_TOKEN) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 export async function GET(request: NextRequest) {
@@ -28,13 +39,26 @@ export async function GET(request: NextRequest) {
   }
 }
 
+function readMeta() {
+  try {
+    return JSON.parse(fs.readFileSync(TODOS_META_FILE, 'utf8'));
+  } catch (_) {
+    return { nextSeq: 1 };
+  }
+}
+
+function writeMeta(meta: any) {
+  fs.writeFileSync(TODOS_META_FILE, JSON.stringify(meta, null, 2));
+}
+
 export async function POST(request: NextRequest) {
-  const isAuthorized = await canModify();
+  const isAuthorized = await canModify(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   try {
+    const session = await auth();
     const { title, status, description, creator } = await request.json();
     
     if (!title) {
@@ -42,16 +66,23 @@ export async function POST(request: NextRequest) {
     }
 
     const data = JSON.parse(fs.readFileSync(TODOS_FILE, 'utf8'));
-    
+
+    const meta = readMeta();
+    const seq = Number(meta.nextSeq || 1);
+    meta.nextSeq = seq + 1;
+
     const todo = {
       id: Date.now().toString(),
+      seq,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       title,
       status: status || 'idea',
       description: description || '',
-      creator: creator || 'unknown'
+      creator: (session?.user?.name || session?.user?.email) ? 'oli' : (creator || 'unknown')
     };
+
+    writeMeta(meta);
 
     data.todos.unshift(todo);
     data.stats.total++;

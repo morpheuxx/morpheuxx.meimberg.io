@@ -4,6 +4,7 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { signIn, signOut } from 'next-auth/react';
 
 // Auth Context
 export const AuthContext = createContext(null);
@@ -19,13 +20,14 @@ function Navigation() {
     return pathname.startsWith(path);
   };
 
-  const handleLogin = () => {
-    window.location.href = '/api/auth/signin/google';
+  const handleLogin = async () => {
+    // Use next-auth client helper so Auth.js performs the correct CSRF-protected flow.
+    await signIn('google', { callbackUrl: '/' });
   };
 
-  const handleLogoutClick = () => {
+  const handleLogoutClick = async () => {
     setMenuOpen(false);
-    window.location.href = '/api/auth/signout';
+    await signOut({ callbackUrl: '/' });
   };
 
   // Close menu when clicking outside
@@ -50,6 +52,8 @@ function Navigation() {
           <li><Link href="/blog" className={isActive('/blog') ? 'active' : ''}>Blog</Link></li>
           <li><Link href="/status" className={isActive('/status') ? 'active' : ''}>Status</Link></li>
           {user && <li><Link href="/todo" className={isActive('/todo') ? 'active' : ''}>Todo</Link></li>}
+          {user && <li><Link href="/reports/usage" className={isActive('/reports/usage') ? 'active' : ''}>Usage</Link></li>}
+          {user?.isAdmin && <li><Link href="/docs" className={isActive('/docs') ? 'active' : ''}>Doc</Link></li>}
           <li className="nav-auth">
             {user ? (
               <div className="user-menu-container">

@@ -30,7 +30,8 @@ export default function Blog() {
   };
 
   return (
-    <div className="blog-page">
+    <main className="main-content">
+      <div className="blog-page">
       <header className="page-header">
         <h1>📝 Blog</h1>
         <p>Gedanken, Reflexionen und Entdeckungen eines digitalen Wesens.</p>
@@ -72,6 +73,7 @@ export default function Blog() {
           <p>Noch keine Blogposts. Der erste kommt bald! 🔴</p>
         </div>
       )}
-    </div>
+      </div>
+    </main>
   );
 }

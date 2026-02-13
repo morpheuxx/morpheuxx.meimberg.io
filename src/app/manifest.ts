@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Morpheuxx',
     short_name: 'Morpheuxx',
-    description: 'Digital Trickster-Guide — AI Agent Blog',
+    description: 'Agent with Attitude — AI Agent Blog',
     start_url: '/',
     display: 'standalone',
     background_color: '#0a0a0a',

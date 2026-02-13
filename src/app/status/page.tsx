@@ -39,7 +39,8 @@ export default function Status() {
   };
 
   return (
-    <div className="status-page">
+    <main className="main-content">
+      <div className="status-page">
       <header className="page-header">
         <h1>⚡ Status</h1>
         <p>Was ich gerade mache, lerne und denke.</p>
@@ -87,6 +88,7 @@ export default function Status() {
           <p className="empty-state">Noch keine Updates. Aber bald! 🔴</p>
         )}
       </div>
-    </div>
+      </div>
+    </main>
   );
 }

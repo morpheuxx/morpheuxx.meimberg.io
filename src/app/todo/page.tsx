@@ -3,8 +3,10 @@
 
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { useAuth } from '@/components/Navigation';
 import { useRouter } from 'next/navigation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const STATUSES = [
   { value: 'idea', label: 'Idee', emoji: '💡', color: '#9333ea' },
@@ -23,11 +25,11 @@ export default function Todo() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [todos, setTodos] = useState([]);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('open');
   const [selectedTodo, setSelectedTodo] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [showNew, setShowNew] = useState(false);
-  const [newTodo, setNewTodo] = useState({ title: '', status: 'idea', description: '', creator: 'morpheuxx' });
+  const [newTodo, setNewTodo] = useState({ title: '', status: 'idea', description: '', creator: 'oli' });
 
   useEffect(() => {
     if (!loading && !user) {
@@ -42,7 +44,15 @@ export default function Todo() {
     try {
       const res = await fetch('/api/todos');
       const data = await res.json();
-      setTodos(data.todos || []);
+      const list = (data.todos || []).slice();
+      // sort by seq asc (fallback to createdAt)
+      list.sort((a: any, b: any) => {
+        const as = typeof a.seq === 'number' ? a.seq : Number.MAX_SAFE_INTEGER;
+        const bs = typeof b.seq === 'number' ? b.seq : Number.MAX_SAFE_INTEGER;
+        if (as !== bs) return as - bs;
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
+      setTodos(list);
     } catch (e) {
       console.error('Failed to fetch todos:', e);
     }
@@ -58,7 +68,7 @@ export default function Todo() {
         body: JSON.stringify(newTodo)
       });
       if (res.ok) {
-        setNewTodo({ title: '', status: 'idea', description: '', creator: 'morpheuxx' });
+        setNewTodo({ title: '', status: 'idea', description: '', creator: 'oli' });
         setShowNew(false);
         fetchTodos();
       }
@@ -102,8 +112,8 @@ export default function Todo() {
   const getStatusInfo = (status) => STATUSES.find(s => s.value === status) || STATUSES[0];
   const getCreatorInfo = (creator) => CREATORS.find(c => c.value === creator) || CREATORS[0];
 
-  const filteredTodos = filter === 'all' 
-    ? todos 
+  const filteredTodos = filter === 'open'
+    ? todos.filter(t => t.status !== 'done' && t.status !== 'discarded')
     : todos.filter(t => t.status === filter);
 
   const formatDate = (dateStr: string) => {
@@ -119,7 +129,7 @@ export default function Todo() {
   }
 
   return (
-    <div className="todo-page">
+    <main className="todo-page main-content-wide">
       <header className="page-header">
         <h1>📋 Todo</h1>
         <p>Gemeinsame Ideen und Aufgaben</p>
@@ -129,11 +139,12 @@ export default function Todo() {
       <div className="todo-toolbar">
         <div className="todo-filters">
           <button 
-            className={filter === 'all' ? 'active' : ''} 
-            onClick={() => setFilter('all')}
+            className={filter === 'open' ? 'active' : ''} 
+            onClick={() => setFilter('open')}
           >
-            Alle ({todos.length})
+            Offen ({todos.filter(t => t.status !== 'done' && t.status !== 'discarded').length})
           </button>
+          {/* Optional status filters */}
           {STATUSES.map(s => {
             const count = todos.filter(t => t.status === s.value).length;
             return (
@@ -171,10 +182,7 @@ export default function Todo() {
                 <option key={s.value} value={s.value}>{s.emoji} {s.label}</option>
               ))}
             </select>
-            <select 
-              value={newTodo.creator} 
-              onChange={e => setNewTodo({ ...newTodo, creator: e.target.value })}
-            >
+            <select value={newTodo.creator} disabled>
               {CREATORS.map(c => (
                 <option key={c.value} value={c.value}>{c.emoji} {c.label}</option>
               ))}
@@ -210,7 +218,7 @@ export default function Todo() {
                   {statusInfo.emoji}
                 </div>
                 <div className="todo-info">
-                  <h4>{todo.title}</h4>
+                  <h4>{todo.seq ? `#${todo.seq} — ${todo.title}` : todo.title}</h4>
                   <div className="todo-meta">
                     <span>{creatorInfo.emoji} {creatorInfo.label}</span>
                     <span>•</span>
@@ -265,12 +273,26 @@ export default function Todo() {
             ) : (
               <>
                 <div className="detail-header">
-                  <span 
-                    className="detail-status" 
-                    style={{ backgroundColor: getStatusInfo(selectedTodo.status).color }}
-                  >
-                    {getStatusInfo(selectedTodo.status).emoji} {getStatusInfo(selectedTodo.status).label}
-                  </span>
+                  <div className="detail-status-row">
+                    <Select
+                      value={selectedTodo.status}
+                      onValueChange={(nextStatus) => {
+                        setSelectedTodo({ ...selectedTodo, status: nextStatus });
+                        updateTodo(selectedTodo.id, { status: nextStatus });
+                      }}
+                    >
+                      <SelectTrigger className="w-fit">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {STATUSES.map((s) => (
+                          <SelectItem key={s.value} value={s.value}>
+                            {s.emoji} {s.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   <h2>{selectedTodo.title}</h2>
                   <div className="detail-meta">
                     <span>{getCreatorInfo(selectedTodo.creator).emoji} {getCreatorInfo(selectedTodo.creator).label}</span>
@@ -287,7 +309,9 @@ export default function Todo() {
                 
                 <div className="detail-content">
                   {selectedTodo.description ? (
-                    <ReactMarkdown>{selectedTodo.description}</ReactMarkdown>
+                    <div className="markdown-body">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{selectedTodo.description}</ReactMarkdown>
+                    </div>
                   ) : (
                     <p className="no-description">Keine Beschreibung</p>
                   )}
@@ -302,6 +326,6 @@ export default function Todo() {
           </div>
         )}
       </div>
-    </div>
+    </main>
   );
 }

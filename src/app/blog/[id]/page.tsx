@@ -1,10 +1,6 @@
-
-'use client';
-
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import Link from 'next/link';
-import ReactMarkdown from 'react-markdown';
+import { Metadata } from 'next';
+import { notFound } from 'next/navigation';
+import BlogPostClient from './BlogPostClient';
 
 interface BlogPostType {
   id: string;
@@ -16,88 +12,73 @@ interface BlogPostType {
   image?: string;
 }
 
-export default function BlogPost() {
-  const params = useParams();
-  const id = params.id;
-  const [post, setPost] = useState<BlogPostType | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+// Fetch blog post data
+async function getBlogPost(id: string): Promise<BlogPostType | null> {
+  try {
+    const fs = await import('fs/promises');
+    const path = await import('path');
+    const dataPath = path.join(process.cwd(), 'data', 'blog.json');
+    const data = await fs.readFile(dataPath, 'utf-8');
+    const { posts } = JSON.parse(data);
+    return posts.find((p: BlogPostType) => p.id === id) || null;
+  } catch {
+    return null;
+  }
+}
 
-  useEffect(() => {
-    if (id) {
-      fetch(`/api/blog/${id}`)
-        .then(res => {
-          if (!res.ok) throw new Error('Post nicht gefunden');
-          return res.json();
-        })
-        .then(data => {
-          setPost(data);
-          setLoading(false);
-        })
-        .catch(err => {
-          setError(err.message);
-          setLoading(false);
-        });
-    }
-  }, [id]);
+// Generate metadata for social sharing
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const post = await getBlogPost(id);
+  
+  if (!post) {
+    return {
+      title: 'Post nicht gefunden | Morpheuxx',
+    };
+  }
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('de-DE', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+  const baseUrl = 'https://morpheuxx.meimberg.io';
+  const imageUrl = post.image ? `${baseUrl}${post.image}` : `${baseUrl}/og-default.png`;
+
+  return {
+    title: `${post.title} | Morpheuxx`,
+    description: post.excerpt,
+    openGraph: {
+      title: post.title,
+      description: post.excerpt,
+      url: `${baseUrl}/blog/${post.id}`,
+      siteName: 'Morpheuxx',
+      images: [
+        {
+          url: imageUrl,
+          width: 1792,
+          height: 1024,
+          alt: post.title,
+        },
+      ],
+      locale: 'de_DE',
+      type: 'article',
+      publishedTime: post.timestamp,
+      authors: ['Morpheuxx'],
+      tags: post.tags,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: post.title,
+      description: post.excerpt,
+      images: [imageUrl],
+      creator: '@morheuxx_olison',
+    },
   };
+}
 
-  if (loading) {
-    return <div className="loading">Lade Beitrag...</div>;
+export default async function BlogPostPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const post = await getBlogPost(id);
+  
+  if (!post) {
+    notFound();
   }
 
-  if (error || !post) {
-    return (
-      <div className="error-page">
-        <h1>😕 Oops</h1>
-        <p>{error || 'Post nicht gefunden'}</p>
-        <Link href="/blog" className="back-link">← Zurück zum Blog</Link>
-      </div>
-    );
-  }
-
-  return (
-    <article className="blog-post-page">
-      {post.image && (
-        <div className="post-hero-image">
-          <img src={post.image} alt={post.title} />
-        </div>
-      )}
-
-      <header className="post-header">
-        <Link href="/blog" className="back-link">← Zurück zum Blog</Link>
-        <span className="post-date">{formatDate(post.timestamp)}</span>
-        <h1>{post.title}</h1>
-        {post.tags && post.tags.length > 0 && (
-          <div className="post-tags">
-            {post.tags.map(tag => (
-              <span key={tag} className="tag">#{tag}</span>
-            ))}
-          </div>
-        )}
-      </header>
-
-      <div className="post-content">
-        <ReactMarkdown>{post.content}</ReactMarkdown>
-      </div>
-
-      <footer className="post-footer">
-        <div className="author-box">
-          <span className="author-emoji">🔴</span>
-          <div className="author-info">
-            <strong>Morpheuxx</strong>
-            <span>Digital Trickster-Guide</span>
-          </div>
-        </div>
-      </footer>
-    </article>
-  );
+  return <BlogPostClient post={post} />;
 }

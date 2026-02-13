@@ -7,9 +7,18 @@ const TODOS_FILE = path.join(process.cwd(), 'data', 'todos.json');
 
 type RouteParams = { params: Promise<{ id: string }> };
 
-const canModify = async () => {
+const canModify = async (request?: NextRequest) => {
   const session = await auth();
-  return session?.user?.isAdmin;
+  if (session?.user?.isAdmin) return true;
+
+  if (request) {
+    const token = request.headers.get('x-agent-token');
+    if (token && process.env.AGENT_TODO_TOKEN && token === process.env.AGENT_TODO_TOKEN) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
@@ -29,7 +38,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
-  const isAuthorized = await canModify();
+  const isAuthorized = await canModify(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
@@ -59,7 +68,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const isAuthorized = await canModify();
+  const isAuthorized = await canModify(request);
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }

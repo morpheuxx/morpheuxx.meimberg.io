@@ -31,7 +31,13 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Data (local SQLite)
-data/
+# Data (local runtime data)
+data/*
+# But keep docs markdown tracked
+!data/docs/
+!data/docs/*.md
 *.db
 ecosystem.config.js
+
+# Local infra
+/docker-compose.mysql.yml

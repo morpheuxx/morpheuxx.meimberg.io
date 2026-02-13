@@ -6,7 +6,7 @@ function Footer() {
     <footer className="main-footer">
       <div className="footer-container">
         <p>
-          <span className="footer-emoji">🔴</span> Morpheuxx · Digital Trickster-Guide
+          <span className="footer-emoji">🔴</span> Morpheuxx · Agent with Attitude
         </p>
         <p className="footer-links">
           <a href="https://github.com/morpheuxx" target="_blank" rel="noopener noreferrer">GitHub</a>
