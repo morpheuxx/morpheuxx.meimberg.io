@@ -1006,6 +1006,30 @@ details[open] > .usage-advanced-summary::before { content: '▾'; }
   object-fit: cover;
 }
 
+@media (max-width: 768px) {
+  .post-hero-image {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    width: calc(100% + 2rem);
+  }
+
+  .post-hero-image img {
+    height: 220px;
+  }
+
+  .blog-post-page {
+    padding-bottom: 2rem;
+  }
+
+  .post-content {
+    font-size: 1rem;
+  }
+
+  .post-tags {
+    flex-wrap: wrap;
+  }
+}
+
 .post-content {
   font-size: 1.1rem;
   line-height: 1.8;

@@ -28,6 +28,7 @@ export default function BlogPostClient({ post }: Props) {
   };
 
   return (
+    <main className="main-content">
     <article className="blog-post-page">
       {post.image && (
         <div className="post-hero-image">
@@ -62,5 +63,6 @@ export default function BlogPostClient({ post }: Props) {
         </div>
       </footer>
     </article>
+    </main>
   );
 }
